@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoxStudio Ultimate - Video Subtitle & AI Voiceover Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        studio: {
+                            50: '#f0f3ff',
+                            100: '#e1e7fe',
+                            800: '#1e1b4b',
+                            900: '#0a0d18',
+                            950: '#05070f',
+                            accent: '#06b6d4',
+                            brand: '#6366f1'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #05070f;
+            color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%),
+                radial-gradient(at 50% 50%, rgba(245, 158, 11, 0.05) 0px, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        /* Custom Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(10, 13, 24, 0.8);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        .glass-panel {
+            background: rgba(10, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glow-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .glow-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .glow-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* High Visibility Text Subtitle Overlay */
+        .subtitle-text-shadow {
+            text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 3px 12px rgba(0,0,0,0.95);
+        }
+
+        /* Pulsing Waveform Animation */
+        @keyframes pulse-wave {
+            0%, 100% { height: 8px; }
+            50% { height: 28px; }
+        }
+        .wave-bar {
+            animation: pulse-wave 1.2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-100">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Header Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            <!-- Brand & Tagline -->
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <i class="fa-solid fa-microphone-lines text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-indigo-300">VoxStudio Ultimate</span>
+                        <span class="text-[10px] font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">ESPORTS & GAMING AI</span>
+                    </div>
+                    <p class="text-xs text-slate-400 hidden sm:block">Video Subtitle & AI Voiceover Studio Komentator Game</p>
+                </div>
+            </div>
+
+            <!-- Engine Switcher & File Actions Header -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Dual Engine Switcher Select -->
+                <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-1 flex items-center gap-1">
+                    <span class="text-[10px] text-slate-400 font-bold px-2 hidden md:inline"><i class="fa-solid fa-engine text-indigo-400"></i> Engine:</span>
+                    <select id="select-voice-engine" class="bg-slate-950 text-slate-200 text-xs font-semibold py-1 px-2.5 rounded-lg border border-slate-800 focus:outline-none focus:border-indigo-500">
+                        <option value="web-speech">🎙️ Browser Speech Synthesis (Instan / Offline)</option>
+                        <option value="gemini-tts" selected>⚡ Gemini Neural TTS (HQ Studio Audio)</option>
+                    </select>
+                </div>
+
+                <label class="cursor-pointer px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-indigo-600/20 transition-all active:scale-95">
+                    <i class="fa-solid fa-file-video text-sm"></i>
+                    <span class="hidden sm:inline">Upload Video Game</span>
+                    <input type="file" id="media-file-input" accept="video/*,audio/*" class="hidden">
+                </label>
+                
+                <!-- TOMBOL IMPOR & EKSPOR SRT -->
+                <label class="cursor-pointer px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95">
+                    <i class="fa-solid fa-file-import"></i>
+                    <span class="hidden sm:inline">Impor .SRT</span>
+                    <input type="file" id="srt-file-input" accept=".srt" class="hidden">
+                </label>
+
+                <button id="btn-export-srt" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 text-xs font-bold flex items-center gap-2 transition-all active:scale-95">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <span class="hidden sm:inline">Ekspor .SRT</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- LEFT PANEL: Video Player, Timeline & Controls (6 Columns) -->
+        <section class="lg:col-span-6 flex flex-col gap-4">
+            
+            <!-- Video & Canvas Container Box -->
+            <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800 shadow-2xl flex flex-col">
+                
+                <!-- Player Display Area -->
+                <div class="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden group">
+                    <video id="main-video-player" class="w-full h-full object-contain hidden" playsinline crossorigin="anonymous"></video>
+                    
+                    <!-- Audio Waveform Visualizer Placeholder when media is Audio -->
+                    <div id="audio-visualizer-container" class="hidden w-full h-full flex flex-col items-center justify-center bg-slate-950 p-6">
+                        <i class="fa-solid fa-compact-disc text-5xl text-indigo-500 animate-spin mb-3" style="animation-duration: 8s;"></i>
+                        <span class="text-xs font-semibold text-slate-400">Audio Gameplay Diputar</span>
+                        <div class="flex items-center gap-1 h-8 mt-4">
+                            <div class="w-1.5 bg-indigo-500 rounded-full wave-bar" style="animation-delay: 0.1s"></div>
+                            <div class="w-1.5 bg-cyan-400 rounded-full wave-bar" style="animation-delay: 0.3s"></div>
+                            <div class="w-1.5 bg-indigo-400 rounded-full wave-bar" style="animation-delay: 0.2s"></div>
+                            <div class="w-1.5 bg-amber-400 rounded-full wave-bar" style="animation-delay: 0.4s"></div>
+                            <div class="w-1.5 bg-indigo-600 rounded-full wave-bar" style="animation-delay: 0.15s"></div>
+                        </div>
+                    </div>
+
+                    <!-- Placeholder display when no file uploaded -->
+                    <div id="empty-media-placeholder" class="flex flex-col items-center justify-center text-center p-6 space-y-3">
+                        <div class="h-16 w-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 shadow-inner">
+                            <i class="fa-solid fa-film text-3xl text-indigo-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-200">Belum Ada Video / Media Game</h3>
+                            <p class="text-xs text-slate-400 max-w-xs mt-1">Upload video game PS3/PS4 atau sampel audio bosq untuk memulai subtitle & voiceover AI.</p>
+                        </div>
+                        <button onclick="document.getElementById('media-file-input').click()" class="px-4 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 text-xs font-bold flex items-center gap-2 transition-all">
+                            <i class="fa-solid fa-folder-open"></i> Pilih File Video Game
+                        </button>
+                    </div>
+
+                    <!-- Live Subtitle Text Overlay over Video -->
+                    <div id="subtitle-overlay" class="absolute bottom-6 inset-x-4 text-center pointer-events-none hidden z-10">
+                        <span id="subtitle-overlay-text" class="inline-block bg-black/85 px-4 py-2 rounded-xl text-amber-300 font-extrabold text-sm sm:text-base tracking-wide border border-amber-500/40 subtitle-text-shadow max-w-xl">
+                            -- Subtitle Komentator Game --
+                        </span>
+                    </div>
+
+                    <!-- Speech Recognition Listening Badge -->
+                    <div id="speech-listening-badge" class="absolute top-4 left-4 bg-red-600/90 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg backdrop-blur-md hidden animate-pulse z-20">
+                        <i class="fa-solid fa-microphone"></i>
+                        <span>Mic Aktif: Listening & Transcribing...</span>
+                    </div>
+                </div>
+
+                <!-- Live Transcript Preview Box -->
+                <div class="bg-slate-950 p-2.5 px-4 border-t border-slate-800 flex items-center gap-2 text-xs">
+                    <span class="text-indigo-400 font-bold whitespace-nowrap flex items-center gap-1.5">
+                        <i class="fa-solid fa-waveform"></i> Terdeteksi:
+                    </span>
+                    <span id="livePreview" class="text-amber-300 italic font-medium truncate">Belum ada suara terdeteksi... (Aktifkan Auto-Detect Subtitle lalu bicara di mic)</span>
+                </div>
+
+                <!-- Timeline Slider & Seek Controls -->
+                <div class="p-4 bg-slate-950/90 border-t border-slate-800 space-y-3">
+                    <!-- Seek Slider -->
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                            <span id="current-time-display">00:00.00</span>
+                            <span id="duration-time-display">00:00.00</span>
+                        </div>
+                        <input type="range" id="timeline-slider" min="0" max="100" value="0" step="0.01" class="w-full accent-indigo-500 bg-slate-800 h-2 rounded-lg appearance-none cursor-pointer">
+                    </div>
+
+                    <!-- Playback & Audio Controls -->
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <button id="btn-play-video" class="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center justify-center transition-all shadow-md shadow-indigo-600/30 active:scale-95">
+                                <i id="play-video-icon" class="fa-solid fa-play text-xs ml-0.5"></i>
+                            </button>
+                            <button id="btn-stop-video" class="h-9 w-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-95">
+                                <i class="fa-solid fa-square text-xs"></i>
+                            </button>
+                            <button id="btn-toggle-mute" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-volume-high" id="muteIcon"></i>
+                                <span id="muteText" class="hidden sm:inline">Game Audio: ON</span>
+                            </button>
+                            <button id="btn-add-timestamp-now" title="Tambah Timestamp di Menit Sekarang" class="px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-plus-circle"></i>
+                                <span>+ Subtitle</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button id="btn-toggle-auto-transcribe" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i>
+                                <span id="auto-transcribe-label">Auto-Detect Subtitle: OFF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Voice Configuration Box (Adaptive according to selected Engine) -->
+            <div class="glass-panel rounded-2xl p-4 border border-slate-800 shadow-xl space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> Mode Suara Komentator AI
+                    </span>
+                    <span id="engine-badge-tag" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        Gemini Neural Engine
+                    </span>
+                </div>
+
+                <!-- Control inputs for Gemini Engine -->
+                <div id="gemini-controls" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Karakter Suara AI</label>
+                        <select id="select-gemini-voice" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <optgroup label="Pria / Garang / Energetik">
+                                <option value="Puck" selected>Puck (Energetik & Ceria)</option>
+                                <option value="Charon">Charon (Berat & Formal)</option>
+                                <option value="Fenrir">Fenrir (Epik & Serak)</option>
+                                <option value="Orus">Orus (Tegas & Maskulin)</option>
+                                <option value="Algenib">Algenib (Karismatik)</option>
+                            </optgroup>
+                            <optgroup label="Wanita / Nyaring">
+                                <option value="Zephyr">Zephyr (Terang & Ceria)</option>
+                                <option value="Kore">Kore (Tegas & Elegan)</option>
+                                <option value="Aoede">Aoede (Hangat & Santai)</option>
+                                <option value="Despina">Despina (Halus)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Gaya / Emosi Bicara</label>
+                        <select id="select-gemini-vibe" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="heroik" selected>⚡ Heroik Esports</option>
+                            <option value="dramatis">🎬 Dramatis Tekken</option>
+                            <option value="ceria">😊 Ceria / Semangat</option>
+                            <option value="berita">🎙️ Komentator Sepakbola</option>
+                            <option value="berbisik">🤫 Berbisik Rahasia</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Sinkronisasi Suara</label>
+                        <label class="flex items-center gap-2 bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-slate-200 cursor-pointer h-[38px]">
+                            <input type="checkbox" id="toggle-voice-sync" checked class="accent-indigo-500 h-4 w-4 rounded">
+                            <span class="text-xs font-medium text-slate-300">Auto-Play Sync</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Control inputs for Web Speech Synthesis Fallback Engine -->
+                <div id="web-speech-controls" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Karakter Browser</label>
+                        <select id="select-webspeech-preset" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="pria-garang" selected>🎙️ Pria Berat / Garang (Komentator)</option>
+                            <option value="pria-semangat">⚡ Pria Cepat & Energetik</option>
+                            <option value="wanita-ceria">👩 Wanita Ceria / Nyaring</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 font-semibold mb-1">Kecepatan Bicara (Speed)</label>
+                        <input type="range" id="webspeech-rate-range" min="0.5" max="1.8" value="1.0" step="0.1" class="w-full mt-2 accent-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT PANEL: Timed Subtitle & Voiceover List Management (6 Columns) -->
+        <section class="lg:col-span-6 flex flex-col gap-4">
+            
+            <div class="glass-panel rounded-2xl p-5 border border-slate-800 shadow-xl flex flex-col flex-1 gap-4">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-3 flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-indigo-400"></i>
+                        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Baris Subtitle & Voiceover</h2>
+                    </div>
+                    
+                    <!-- Search Input Box -->
+                    <div class="relative flex-1 max-w-xs min-w-[150px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="input-search-subtitle" placeholder="Cari teks subtitle..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button id="btn-clear-all" class="px-2.5 py-1.5 rounded-xl bg-red-900/30 hover:bg-red-900/50 border border-red-500/30 text-red-400 text-xs font-semibold transition-all">
+                            <i class="fa-solid fa-trash-can"></i> Hapus
+                        </button>
+                        <button id="btn-add-row-manual" class="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-300 text-xs font-bold flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-plus"></i> Tambah
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preset Skrip Komentator Game -->
+                <div class="flex items-center justify-between bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 text-xs text-slate-400 gap-2 flex-wrap">
+                    <span>Preset Templat Skrip Komentator:</span>
+                    <div class="flex items-center gap-2">
+                        <button onclick="loadSampleGameScript('fighting')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 font-semibold transition-all">
+                            🎮 Fighting (PS3/PS4)
+                        </button>
+                        <button onclick="loadSampleGameScript('football')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-slate-800 font-semibold transition-all">
+                            ⚽ Bola / eFootball
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Subtitles Dynamic List Container -->
+                <div id="subtitle-list-container" class="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+                    <!-- Dynamic Subtitle Rows generated by JS -->
+                </div>
+
+                <!-- Footer Convert All Action -->
+                <div class="pt-3 border-t border-slate-800/80 flex flex-col gap-3">
+                    <div class="flex items-center justify-between gap-3">
+                        <span id="total-rows-counter" class="text-xs text-slate-400 font-mono">Total Segmen: 0</span>
+                        
+                        <div class="flex items-center gap-2">
+                            <button id="btn-convert-all-ai" class="glow-btn px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all active:scale-95">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                                <span>Convert Semua Voice AI</span>
+                            </button>
+                            <button id="btn-merge-all-audio" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all active:scale-95">
+                                <i class="fa-solid fa-object-group"></i>
+                                <span>Gabungkan Semua Audio</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Merged Audio Player Container (Hidden by default until merged) -->
+                    <div id="merged-audio-container" class="hidden bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3 flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-music text-amber-400"></i> Audio Komentator Utuh (Merged WAV)
+                            </span>
+                            <a id="download-merged-audio-btn" download="Full_AI_Voiceover_Commentary.wav" href="#" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all">
+                                <i class="fa-solid fa-download"></i> Unduh Single Audio (.WAV)
+                            </a>
+                        </div>
+                        
+                        <!-- Progress Render Bar -->
+                        <div id="merge-progress-box" class="hidden w-full space-y-1">
+                            <div class="flex justify-between text-[10px] text-indigo-300 font-mono">
+                                <span id="merge-status-text">Memproses audio...</span>
+                                <span id="merge-percent-text">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                                <div id="merge-progress-bar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full w-0 transition-all duration-200"></div>
+                            </div>
+                        </div>
+
+                        <audio id="merged-audio-player" controls class="w-full h-8 rounded-lg"></audio>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-4 bg-slate-950/90 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>© 2026 VoxStudio Ultimate • Video Subtitle & AI Voiceover Studio</span>
+            <span class="flex items-center gap-2 text-slate-400">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i> Dual Engine Speech & Auto-Detect Enabled
+            </span>
+        </div>
+    </footer>
+
+    <!-- JS Logic Application Engine -->
+    <script>
+        // API Key (handled automatically by runtime system)
+        const apiKey = "";
+
+        // Sample Game Commentary Scripts
+        const SAMPLE_FIGHTING_SEGMENTS = [
+            { startTime: "00:02.00", endTime: "00:05.00", text: "Ronde pertama dimulai! Kedua petarung siap saling serang!", audioUrl: null },
+            { startTime: "00:07.00", endTime: "00:10.00", text: "Pukulan kombo pertama masuk dengan sangat telak!", audioUrl: null },
+            { startTime: "00:12.50", endTime: "00:15.50", text: "Bagus sekali balasan tendangannya! Darah musuh berkurang drastis!", audioUrl: null },
+            { startTime: "00:18.00", endTime: "00:22.00", text: "Jurus pamungkas diaktifkan! K.O. telak di ronde penentuan ini!", audioUrl: null }
+        ];
+
+        const SAMPLE_FOOTBALL_SEGMENTS = [
+            { startTime: "00:01.50", endTime: "00:04.50", text: "Peluit kick-off dibunyikan, operan pendek di tengah lapangan!", audioUrl: null },
+            { startTime: "00:06.00", endTime: "00:09.00", text: "Umpan terobosan yang sangat cerdik ke lini depan!", audioUrl: null },
+            { startTime: "00:11.00", endTime: "00:14.00", text: "Tembakan keras langsung menuju gawang musuh!", audioUrl: null },
+            { startTime: "00:15.50", endTime: "00:19.00", text: "GOOOOLLLL luar biasa! Gol spektakuler di menit awal!", audioUrl: null }
+        ];
+
+        const VIBE_PROMPTS = {
+            heroik: "Say heroically, fast-paced and with high energy like an excited esports commentator: ",
+            dramatis: "Say dramatically and intensely like a fight narrator: ",
+            ceria: "Say cheerfully and energetically: ",
+            berita: "Say like a professional sports reporter: ",
+            berbisik: "Say in a tense whisper: "
+        };
+
+        // Application State Data
+        let subtitles = [];
+        let searchQuery = "";
+        let activeSegmentIndex = -1;
+        let lastTriggeredSegmentIndex = -1;
+        let autoDetectActive = false;
+        let speechRecognition = null;
+        let segmentStartSec = 0;
+        let browserVoices = [];
+
+        // DOM Elements
+        const selectVoiceEngine = document.getElementById('select-voice-engine');
+        const mediaFileInput = document.getElementById('media-file-input');
+        const srtFileInput = document.getElementById('srt-file-input');
+        const inputSearchSubtitle = document.getElementById('input-search-subtitle');
+        const videoPlayer = document.getElementById('main-video-player');
+        const emptyPlaceholder = document.getElementById('empty-media-placeholder');
+        const audioVisualizerContainer = document.getElementById('audio-visualizer-container');
+        const subtitleOverlay = document.getElementById('subtitle-overlay');
+        const subtitleOverlayText = document.getElementById('subtitle-overlay-text');
+        const speechListeningBadge = document.getElementById('speech-listening-badge');
+        const livePreview = document.getElementById('livePreview');
+
+        const timelineSlider = document.getElementById('timeline-slider');
+        const currentTimeDisplay = document.getElementById('current-time-display');
+        const durationTimeDisplay = document.getElementById('duration-time-display');
+
+        const btnPlayVideo = document.getElementById('btn-play-video');
+        const playVideoIcon = document.getElementById('play-video-icon');
+        const btnStopVideo = document.getElementById('btn-stop-video');
+        const btnToggleMute = document.getElementById('btn-toggle-mute');
+        const muteIcon = document.getElementById('muteIcon');
+        const muteText = document.getElementById('muteText');
+        const btnAddTimestampNow = document.getElementById('btn-add-timestamp-now');
+        const btnToggleAutoTranscribe = document.getElementById('btn-toggle-auto-transcribe');
+        const autoTranscribeLabel = document.getElementById('auto-transcribe-label');
+
+        const geminiControls = document.getElementById('gemini-controls');
+        const webSpeechControls = document.getElementById('web-speech-controls');
+        const engineBadgeTag = document.getElementById('engine-badge-tag');
+        const selectGeminiVoice = document.getElementById('select-gemini-voice');
+        const selectGeminiVibe = document.getElementById('select-gemini-vibe');
+        const toggleVoiceSync = document.getElementById('toggle-voice-sync');
+        const selectWebspeechPreset = document.getElementById('select-webspeech-preset');
+        const webspeechRateRange = document.getElementById('webspeech-rate-range');
+
+        const subtitleListContainer = document.getElementById('subtitle-list-container');
+        const btnAddRowManual = document.getElementById('btn-add-row-manual');
+        const btnClearAll = document.getElementById('btn-clear-all');
+        const btnConvertAllAI = document.getElementById('btn-convert-all-ai');
+        const btnExportSrt = document.getElementById('btn-export-srt');
+        const totalRowsCounter = document.getElementById('total-rows-counter');
+        const btnMergeAllAudio = document.getElementById('btn-merge-all-audio');
+        const mergedAudioContainer = document.getElementById('merged-audio-container');
+        const mergedAudioPlayer = document.getElementById('merged-audio-player');
+        const downloadMergedAudioBtn = document.getElementById('download-merged-audio-btn');
+        const mergeProgressBox = document.getElementById('merge-progress-box');
+        const mergeProgressBar = document.getElementById('merge-progress-bar');
+        const mergePercentText = document.getElementById('merge-percent-text');
+
+        // Toast Notification System
+        function showToast(msg, type = "info") {
+            const container = document.getElementById('toast-container');
+            const div = document.createElement('div');
+            const bgClass = type === 'error' ? 'bg-red-600/90 border-red-500' : (type === 'success' ? 'bg-emerald-600/90 border-emerald-500' : 'bg-indigo-600/90 border-indigo-500');
+            const iconClass = type === 'error' ? 'fa-circle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-circle-info');
+            
+            div.className = `p-3 px-4 rounded-xl text-xs font-semibold shadow-lg backdrop-blur-md flex items-center gap-2 text-white border pointer-events-auto transition-all ${bgClass}`;
+            div.innerHTML = `<i class="fa-solid ${iconClass}"></i> <span>${msg}</span>`;
+            
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+
+        // Local Storage Auto-Save Logic
+        function saveToLocalStorage() {
+            try {
+                const draft = subtitles.map(s => ({
+                    startTime: s.startTime,
+                    endTime: s.endTime,
+                    text: s.text
+                }));
+                localStorage.setItem('voxstudio_project_draft', JSON.stringify(draft));
+            } catch (e) {}
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('voxstudio_project_draft');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        subtitles = parsed.map(s => ({ ...s, id: Date.now() + Math.random(), audioUrl: null }));
+                        renderSubtitles();
+                        showToast("Draf kerja terakhir berhasil dipulihkan otomatis!", "success");
+                        return true;
+                    }
+                }
+            } catch (e) {}
+            return false;
+        }
+
+        // Time Utilities
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "00:00.00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 100);
+            return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}.${ms < 10 ? '0' : ''}${ms}`;
+        }
+
+        function parseTimeToSeconds(timeStr) {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(':');
+            if (parts.length < 2) return parseFloat(timeStr) || 0;
+            const mins = parseFloat(parts[0]) || 0;
+            const secsParts = parts[1].split('.');
+            const secs = parseFloat(secsParts[0]) || 0;
+            const ms = secsParts[1] ? parseFloat(secsParts[1]) / 100 : 0;
+            return (mins * 60) + secs + ms;
+        }
+
+        // Load Web Speech Synthesis Voices
+        function loadBrowserVoices() {
+            if ('speechSynthesis' in window) {
+                browserVoices = window.speechSynthesis.getVoices();
+            }
+        }
+        loadBrowserVoices();
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = loadBrowserVoices;
+        }
+
+        // Initialize App & Handlers
+        function initApp() {
+            setupEventListeners();
+            initSpeechRecognition();
+            if (!loadFromLocalStorage()) {
+                loadSampleGameScript('fighting');
+            }
+        }
+
+        // Speech Recognition Setup (Safeguarded against InvalidStateError)
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast("Browser tidak mendukung Speech Recognition secara native. Gunakan Chrome/Edge.", "error");
+                btnToggleAutoTranscribe.disabled = true;
+                btnToggleAutoTranscribe.classList.add('opacity-50', 'cursor-not-allowed');
+                return;
+            }
+
+            if (!speechRecognition) {
+                speechRecognition = new SpeechRecognition();
+                speechRecognition.continuous = true;
+                speechRecognition.interimResults = true;
+                speechRecognition.lang = 'id-ID';
+
+                speechRecognition.onstart = () => {
+                    speechListeningBadge.classList.remove('hidden');
+                };
+
+                speechRecognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    const currentSec = videoPlayer.currentTime || 0;
+
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const transcript = event.results[i][0].transcript.trim();
+                        if (event.results[i].isFinal && transcript) {
+                            const endSec = currentSec;
+                            const startSec = Math.max(0, segmentStartSec || (endSec - 3));
+                            
+                            addSubtitleRow(formatTime(startSec), formatTime(endSec), transcript);
+                            segmentStartSec = endSec;
+                            livePreview.innerText = `[Tersalin]: "${transcript}"`;
+                        } else {
+                            interimTranscript += transcript;
+                        }
+                    }
+
+                    if (interimTranscript) {
+                        livePreview.innerText = `Mendengar: "${interimTranscript}..."`;
+                    }
+                };
+
+                speechRecognition.onerror = (e) => {
+                    console.log("Speech Error:", e.error);
+                };
+
+                speechRecognition.onend = () => {
+                    speechListeningBadge.classList.add('hidden');
+                    // Safety check: Only restart if autoDetectActive is still true and video is not paused
+                    if (autoDetectActive && !videoPlayer.paused) {
+                        setTimeout(() => {
+                            if (autoDetectActive && !videoPlayer.paused) {
+                                try {
+                                    speechRecognition.start();
+                                } catch(e) {
+                                    // Ignore if already active
+                                }
+                            }
+                        }, 250);
+                    }
+                };
+            }
+        }
+
+        function setupEventListeners() {
+            // Impor File .SRT Handler
+            srtFileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const content = event.target.result;
+                    parseAndLoadSRT(content);
+                };
+                reader.readAsText(file);
+            };
+
+            // Search Filter
+            inputSearchSubtitle.oninput = (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderSubtitles();
+            };
+
+            // Engine Selector Switcher
+            selectVoiceEngine.onchange = (e) => {
+                const engine = e.target.value;
+                if (engine === 'web-speech') {
+                    geminiControls.classList.add('hidden');
+                    webSpeechControls.classList.remove('hidden');
+                    engineBadgeTag.innerText = "Browser Speech Synthesis";
+                    engineBadgeTag.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30";
+                    showToast("Beralih ke Browser Speech Synthesis Engine");
+                } else {
+                    webSpeechControls.classList.add('hidden');
+                    geminiControls.classList.remove('hidden');
+                    engineBadgeTag.innerText = "Gemini Neural Engine";
+                    engineBadgeTag.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30";
+                    showToast("Beralih ke Gemini Neural TTS API Engine");
+                }
+            };
+
+            // Media File Input Loader
+            mediaFileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const fileUrl = URL.createObjectURL(file);
+                emptyPlaceholder.classList.add('hidden');
+
+                if (file.type.startsWith('video/')) {
+                    videoPlayer.src = fileUrl;
+                    videoPlayer.classList.remove('hidden');
+                    audioVisualizerContainer.classList.add('hidden');
+                } else if (file.type.startsWith('audio/')) {
+                    videoPlayer.src = fileUrl;
+                    videoPlayer.classList.add('hidden');
+                    audioVisualizerContainer.classList.remove('hidden');
+                }
+
+                showToast(`Media ${file.name} berhasil dimuat!`, "success");
+            };
+
+            // Video Player Time Update Sync
+            videoPlayer.ontimeupdate = () => {
+                const cur = videoPlayer.currentTime;
+                const dur = videoPlayer.duration || 1;
+                
+                timelineSlider.value = (cur / dur) * 100;
+                currentTimeDisplay.innerText = formatTime(cur);
+                durationTimeDisplay.innerText = formatTime(dur);
+
+                checkSubtitleAndVoiceSync(cur);
+            };
+
+            videoPlayer.onloadedmetadata = () => {
+                durationTimeDisplay.innerText = formatTime(videoPlayer.duration);
+            };
+
+            videoPlayer.onended = () => {
+                playVideoIcon.className = "fa-solid fa-play text-xs ml-0.5";
+                subtitleOverlay.classList.add('hidden');
+                if (speechRecognition && autoDetectActive) {
+                    try { speechRecognition.stop(); } catch(e){}
+                }
+            };
+
+            // Play / Pause / Stop
+            btnPlayVideo.onclick = () => {
+                if (!videoPlayer.src) {
+                    showToast("Upload video/audio game terlebih dahulu!");
+                    return;
+                }
+                if (videoPlayer.paused) {
+                    videoPlayer.play();
+                    playVideoIcon.className = "fa-solid fa-pause text-xs";
+
+                    if (autoDetectActive && speechRecognition) {
+                        segmentStartSec = videoPlayer.currentTime;
+                        try {
+                            speechRecognition.start();
+                        } catch(e) {}
+                    }
+                } else {
+                    videoPlayer.pause();
+                    playVideoIcon.className = "fa-solid fa-play text-xs ml-0.5";
+
+                    if (speechRecognition && autoDetectActive) {
+                        try { speechRecognition.stop(); } catch(e){}
+                    }
+                }
+            };
+
+            btnStopVideo.onclick = () => {
+                videoPlayer.pause();
+                videoPlayer.currentTime = 0;
+                playVideoIcon.className = "fa-solid fa-play text-xs ml-0.5";
+                subtitleOverlay.classList.add('hidden');
+
+                if (speechRecognition && autoDetectActive) {
+                    try { speechRecognition.stop(); } catch(e){}
+                }
+            };
+
+            // Toggle Video Mute
+            btnToggleMute.onclick = () => {
+                videoPlayer.muted = !videoPlayer.muted;
+                if (videoPlayer.muted) {
+                    btnToggleMute.className = "px-3 py-2 rounded-xl bg-red-900/40 border border-red-700/80 text-red-300 text-xs font-bold flex items-center gap-1.5 transition-all";
+                    muteIcon.className = "fa-solid fa-volume-xmark";
+                    muteText.innerText = "Game Audio: MUTED";
+                } else {
+                    btnToggleMute.className = "px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 text-xs font-bold flex items-center gap-1.5 transition-all";
+                    muteIcon.className = "fa-solid fa-volume-high";
+                    muteText.innerText = "Game Audio: ON";
+                }
+            };
+
+            timelineSlider.oninput = (e) => {
+                const dur = videoPlayer.duration || 0;
+                if (dur > 0) {
+                    videoPlayer.currentTime = (e.target.value / 100) * dur;
+                    segmentStartSec = videoPlayer.currentTime;
+                }
+            };
+
+            // Auto-Transcribe Toggle with State Guards
+            btnToggleAutoTranscribe.onclick = () => {
+                autoDetectActive = !autoDetectActive;
+
+                if (autoDetectActive) {
+                    btnToggleAutoTranscribe.className = "px-3 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-md animate-pulse";
+                    autoTranscribeLabel.innerText = "Auto-Detect Subtitle: ON";
+                    livePreview.innerText = "Mic aktif! Bicara sekarang saat video diputar...";
+                    showToast("Fitur Auto-Detect Subtitle AKTIF!", "success");
+
+                    if (!videoPlayer.paused && speechRecognition) {
+                        segmentStartSec = videoPlayer.currentTime;
+                        try {
+                            speechRecognition.stop();
+                        } catch(e) {}
+                        setTimeout(() => {
+                            if (autoDetectActive) {
+                                try {
+                                    speechRecognition.start();
+                                } catch(e) {}
+                            }
+                        }, 200);
+                    }
+                } else {
+                    btnToggleAutoTranscribe.className = "px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-bold flex items-center gap-1.5 transition-all";
+                    autoTranscribeLabel.innerText = "Auto-Detect Subtitle: OFF";
+                    speechListeningBadge.classList.add('hidden');
+                    livePreview.innerText = "Auto-Detect dimatikan.";
+
+                    if (speechRecognition) {
+                        try {
+                            speechRecognition.stop();
+                        } catch(e) {}
+                    }
+                }
+            };
+
+            // Add Manual Segment
+            btnAddTimestampNow.onclick = () => {
+                const nowSec = videoPlayer.currentTime || 0;
+                addSubtitleRow(formatTime(nowSec), formatTime(nowSec + 3), "Komentar di menit ini...");
+                showToast("Baris subtitle baru ditambahkan!");
+            };
+
+            btnAddRowManual.onclick = () => {
+                const lastSub = subtitles[subtitles.length - 1];
+                let nextStartSec = lastSub ? parseTimeToSeconds(lastSub.endTime) + 0.5 : 0;
+                addSubtitleRow(formatTime(nextStartSec), formatTime(nextStartSec + 3), "Tulis teks subtitle...");
+            };
+
+            btnClearAll.onclick = () => {
+                subtitles = [];
+                renderSubtitles();
+                showToast("Semua baris subtitle dibersihkan.");
+            };
+
+            // Convert All Segments Action
+            btnConvertAllAI.onclick = async () => {
+                if (subtitles.length === 0) {
+                    showToast("Belum ada baris subtitle untuk di-convert!", "error");
+                    return;
+                }
+
+                btnConvertAllAI.disabled = true;
+                btnConvertAllAI.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Converting...`;
+
+                const engine = selectVoiceEngine.value;
+
+                if (engine === 'web-speech') {
+                    let fullText = subtitles.map(s => s.text).join(". ");
+                    speakWebSpeech(fullText);
+                } else {
+                    for (let i = 0; i < subtitles.length; i++) {
+                        await generateSingleSegmentGemini(i);
+                    }
+                    showToast("Semua teks berhasil di-convert ke Voice AI!", "success");
+                }
+
+                btnConvertAllAI.disabled = false;
+                btnConvertAllAI.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Convert Semua Voice AI`;
+            };
+
+            // Merge All AI Voice Audio Segments Into One Timeline Audio
+            btnMergeAllAudio.onclick = async () => {
+                if (subtitles.length === 0) {
+                    showToast("Belum ada baris subtitle untuk digabungkan!", "error");
+                    return;
+                }
+
+                btnMergeAllAudio.disabled = true;
+                btnMergeAllAudio.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Menggabungkan...`;
+                
+                mergedAudioContainer.classList.remove('hidden');
+                mergeProgressBox.classList.remove('hidden');
+                mergeProgressBar.style.width = '10%';
+                mergePercentText.innerText = '10%';
+
+                try {
+                    const sampleRate = 24000;
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate });
+
+                    const renderTasks = [];
+                    const totalSubs = subtitles.length;
+
+                    for (let i = 0; i < totalSubs; i++) {
+                        const sub = subtitles[i];
+                        if (!sub.text.trim()) continue;
+
+                        const pct = Math.floor(10 + ((i + 1) / totalSubs) * 60);
+                        mergeProgressBar.style.width = `${pct}%`;
+                        mergePercentText.innerText = `${pct}%`;
+
+                        if (!sub.audioUrl && selectVoiceEngine.value === 'gemini-tts') {
+                            await generateSingleSegmentGemini(i);
+                        }
+
+                        if (sub.audioUrl) {
+                            const resp = await fetch(sub.audioUrl);
+                            const arrayBuf = await resp.arrayBuffer();
+                            const decodedBuf = await audioCtx.decodeAudioData(arrayBuf);
+                            const startSec = parseTimeToSeconds(sub.startTime);
+                            const durationSec = decodedBuf.duration;
+
+                            renderTasks.push({
+                                index: i,
+                                startSec,
+                                endSec: startSec + durationSec,
+                                buffer: decodedBuf
+                            });
+                        }
+                    }
+
+                    mergeProgressBar.style.width = '80%';
+                    mergePercentText.innerText = '80%';
+
+                    if (renderTasks.length === 0) {
+                        showToast("Tidak ada audio yang dapat digabungkan. Silakan Convert Voice AI terlebih dahulu!", "error");
+                        btnMergeAllAudio.disabled = false;
+                        btnMergeAllAudio.innerHTML = `<i class="fa-solid fa-object-group"></i> Gabungkan Semua Audio`;
+                        mergeProgressBox.classList.add('hidden');
+                        return;
+                    }
+
+                    renderTasks.sort((a, b) => a.startSec - b.startSec);
+
+                    for (let i = 0; i < renderTasks.length - 1; i++) {
+                        const current = renderTasks[i];
+                        const next = renderTasks[i + 1];
+
+                        if (current.endSec > next.startSec) {
+                            const maxAllowedDuration = Math.max(0.2, next.startSec - current.startSec - 0.05);
+                            current.playDuration = maxAllowedDuration;
+                        } else {
+                            current.playDuration = current.buffer.duration;
+                        }
+                    }
+                    if (renderTasks.length > 0) {
+                        renderTasks[renderTasks.length - 1].playDuration = renderTasks[renderTasks.length - 1].buffer.duration;
+                    }
+
+                    let totalMaxSec = 0;
+                    renderTasks.forEach(t => {
+                        const actualEnd = t.startSec + t.playDuration;
+                        if (actualEnd > totalMaxSec) totalMaxSec = actualEnd;
+                    });
+                    totalMaxSec += 1;
+
+                    const totalFrames = Math.ceil(totalMaxSec * sampleRate);
+                    const offlineCtx = new OfflineAudioContext(1, totalFrames, sampleRate);
+
+                    renderTasks.forEach(task => {
+                        const source = offlineCtx.createBufferSource();
+                        source.buffer = task.buffer;
+                        
+                        const gainNode = offlineCtx.createGain();
+                        gainNode.gain.setValueAtTime(1.0, task.startSec);
+                        
+                        if (task.playDuration < task.buffer.duration) {
+                            gainNode.gain.setValueAtTime(1.0, task.startSec + task.playDuration - 0.05);
+                            gainNode.gain.linearRampToValueAtTime(0.001, task.startSec + task.playDuration);
+                        }
+
+                        source.connect(gainNode);
+                        gainNode.connect(offlineCtx.destination);
+                        source.start(task.startSec, 0, task.playDuration);
+                    });
+
+                    const renderedBuffer = await offlineCtx.startRendering();
+                    const pcmData = renderedBuffer.getChannelData(0);
+                    
+                    const pcm16 = new Int16Array(pcmData.length);
+                    for (let i = 0; i < pcmData.length; i++) {
+                        const s = Math.max(-1, Math.min(1, pcmData[i]));
+                        pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    }
+
+                    let binary = '';
+                    const bytes = new Uint8Array(pcm16.buffer);
+                    const len = bytes.byteLength;
+                    for (let i = 0; i < len; i++) {
+                        binary += String.fromCharCode(bytes[i]);
+                    }
+                    const base64Data = btoa(binary);
+
+                    const mergedWavBlob = pcmToWav(base64Data, sampleRate);
+                    const mergedUrl = URL.createObjectURL(mergedWavBlob);
+
+                    mergeProgressBar.style.width = '100%';
+                    mergePercentText.innerText = '100%';
+
+                    mergedAudioPlayer.src = mergedUrl;
+                    downloadMergedAudioBtn.href = mergedUrl;
+
+                    showToast("Suara AI berhasil digabungkan dengan FOKUS & JERNIH tanpa bentrok!", "success");
+                } catch (err) {
+                    showToast(`Gagal menggabungkan audio: ${err.message}`, "error");
+                } finally {
+                    btnMergeAllAudio.disabled = false;
+                    btnMergeAllAudio.innerHTML = `<i class="fa-solid fa-object-group"></i> Gabungkan Semua Audio`;
+                    setTimeout(() => mergeProgressBox.classList.add('hidden'), 2000);
+                }
+            };
+
+            // Export SRT
+            btnExportSrt.onclick = exportSrtFile;
+        }
+
+        // Subtitle & Voiceover Realtime Synchronizer
+        function checkSubtitleAndVoiceSync(currentSec) {
+            let activeSeg = null;
+            let activeIdx = -1;
+
+            for (let i = 0; i < subtitles.length; i++) {
+                const start = parseTimeToSeconds(subtitles[i].startTime);
+                const end = parseTimeToSeconds(subtitles[i].endTime);
+
+                if (currentSec >= start && currentSec <= end) {
+                    activeSeg = subtitles[i];
+                    activeIdx = i;
+                    break;
+                }
+            }
+
+            if (activeSeg) {
+                subtitleOverlay.classList.remove('hidden');
+                subtitleOverlayText.innerText = activeSeg.text;
+
+                if (toggleVoiceSync && toggleVoiceSync.checked && activeIdx !== lastTriggeredSegmentIndex) {
+                    lastTriggeredSegmentIndex = activeIdx;
+                    if (activeSeg.audioUrl) {
+                        const voiceAudio = new Audio(activeSeg.audioUrl);
+                        voiceAudio.play().catch(e => console.log("Audio play blocked", e));
+                    }
+                }
+            } else {
+                subtitleOverlay.classList.add('hidden');
+                if (subtitles[lastTriggeredSegmentIndex] && currentSec < parseTimeToSeconds(subtitles[lastTriggeredSegmentIndex].startTime)) {
+                    lastTriggeredSegmentIndex = -1;
+                }
+            }
+        }
+
+        // Parse Impor File SRT External
+        function parseAndLoadSRT(srtContent) {
+            try {
+                const normalized = srtContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+                const blocks = normalized.trim().split(/\n\s*\n/);
+                const loaded = [];
+
+                blocks.forEach(block => {
+                    const lines = block.split('\n');
+                    if (lines.length >= 2) {
+                        const timeLine = lines.find(l => l.includes('-->'));
+                        if (timeLine) {
+                            const [startRaw, endRaw] = timeLine.split('-->').map(s => s.trim());
+                            const textLines = lines.slice(lines.indexOf(timeLine) + 1).join(' ').trim();
+
+                            loaded.push({
+                                id: Date.now() + Math.random(),
+                                startTime: convertSrtTimeToCustom(startRaw),
+                                endTime: convertSrtTimeToCustom(endRaw),
+                                text: textLines,
+                                audioUrl: null
+                            });
+                        }
+                    }
+                });
+
+                if (loaded.length > 0) {
+                    subtitles = loaded;
+                    renderSubtitles();
+                    showToast(`Berhasil mengimpor ${loaded.length} baris subtitle dari file SRT!`, "success");
+                } else {
+                    showToast("Format file .SRT tidak valid atau kosong.", "error");
+                }
+            } catch (err) {
+                showToast("Gagal membaca file .SRT: " + err.message, "error");
+            }
+        }
+
+        function convertSrtTimeToCustom(srtTime) {
+            const parts = srtTime.split(':');
+            if (parts.length === 3) {
+                const mins = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+                const secsMs = parts[2].replace(',', '.');
+                const secs = parseFloat(secsMs);
+                return formatTime(mins * 60 + secs);
+            }
+            return "00:00.00";
+        }
+
+        // Subtitle Item Management
+        function addSubtitleRow(startTime = "00:00.00", endTime = "00:03.00", text = "") {
+            const id = Date.now() + Math.floor(Math.random() * 1000);
+            subtitles.push({ id, startTime, endTime, text, audioUrl: null });
+            renderSubtitles();
+        }
+
+        function renderSubtitles() {
+            saveToLocalStorage();
+            subtitleListContainer.innerHTML = "";
+            
+            const filteredSubs = subtitles.filter(s => s.text.toLowerCase().includes(searchQuery));
+            totalRowsCounter.innerText = `Total Segmen: ${filteredSubs.length}${searchQuery ? ` (Filter)` : ''}`;
+
+            if (filteredSubs.length === 0) {
+                subtitleListContainer.innerHTML = `
+                    <div class="text-center py-12 text-xs text-slate-500">
+                        <i class="fa-solid fa-closed-captioning text-3xl text-slate-700 mb-2"></i>
+                        <p>${searchQuery ? 'Tidak ada subtitle yang cocok dengan pencarian.' : 'Belum ada baris subtitle.<br>Nyalakan Auto-Detect lalu ngomong di mic atau impor file .SRT!'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredSubs.forEach((sub) => {
+                const index = subtitles.indexOf(sub);
+                const card = document.createElement('div');
+                card.className = `p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col gap-2.5 transition-all hover:border-slate-700`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-xs gap-2">
+                        <!-- Timestamps -->
+                        <div class="flex items-center gap-1.5 font-mono">
+                            <span class="text-indigo-400 font-bold">#${index + 1}</span>
+                            <input type="text" value="${sub.startTime}" onchange="updateSubtitleProp(${index}, 'startTime', this.value)" class="w-20 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-center text-slate-200 focus:border-indigo-500 font-mono text-[11px]">
+                            <span class="text-slate-500">➜</span>
+                            <input type="text" value="${sub.endTime}" onchange="updateSubtitleProp(${index}, 'endTime', this.value)" class="w-20 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-center text-slate-200 focus:border-indigo-500 font-mono text-[11px]">
+                        </div>
+
+                        <!-- Row Actions -->
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="seekToTimestamp(${index})" title="Loncat ke timestamp video" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">
+                                <i class="fa-solid fa-crosshairs"></i>
+                            </button>
+                            <button onclick="playSingleRowVoice(${index})" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 font-bold text-[11px] rounded-lg flex items-center gap-1">
+                                <i class="fa-solid fa-play text-amber-300"></i>
+                                <span>Putar Voice</span>
+                            </button>
+                            <button onclick="deleteSubtitleRow(${index})" title="Hapus segmen ini" class="p-1.5 bg-slate-800 hover:bg-red-900/40 text-slate-400 hover:text-red-400 rounded-lg text-xs transition-colors">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Subtitle Textarea -->
+                    <textarea onchange="updateSubtitleProp(${index}, 'text', this.value)" placeholder="Tuliskan komentar atau subtitle untuk durasi di atas..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 leading-relaxed resize-y">${sub.text}</textarea>
+
+                    <!-- Audio Status Indicator -->
+                    ${sub.audioUrl ? `
+                        <div class="flex items-center justify-between bg-slate-950/80 p-2 rounded-lg border border-slate-800/80 text-[11px]">
+                            <div class="flex items-center gap-2">
+                                <button onclick="playAudioUrl('${sub.audioUrl}')" class="h-6 w-6 rounded-md bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-500">
+                                    <i class="fa-solid fa-play text-[10px] ml-0.5"></i>
+                                </button>
+                                <span class="text-emerald-400 font-mono">✓ Gemini Audio Ready</span>
+                            </div>
+                            <a href="${sub.audioUrl}" download="Voiceover_${index + 1}.wav" class="text-slate-400 hover:text-white transition-colors">
+                                <i class="fa-solid fa-download mr-1"></i> Unduh WAV
+                            </a>
+                        </div>
+                    ` : ''}
+                `;
+
+                subtitleListContainer.appendChild(card);
+            });
+        }
+
+        function updateSubtitleProp(idx, prop, val) {
+            subtitles[idx][prop] = val;
+            saveToLocalStorage();
+        }
+
+        function deleteSubtitleRow(idx) {
+            subtitles.splice(idx, 1);
+            renderSubtitles();
+        }
+
+        function seekToTimestamp(idx) {
+            const startSec = parseTimeToSeconds(subtitles[idx].startTime);
+            videoPlayer.currentTime = startSec;
+            showToast(`Loncat ke ${subtitles[idx].startTime}`);
+        }
+
+        function loadSampleGameScript(type) {
+            if (type === 'fighting') {
+                subtitles = JSON.parse(JSON.stringify(SAMPLE_FIGHTING_SEGMENTS));
+                renderSubtitles();
+                showToast("Templat Komentator Fighting Game Dimuat!", "success");
+            } else if (type === 'football') {
+                subtitles = JSON.parse(JSON.stringify(SAMPLE_FOOTBALL_SEGMENTS));
+                renderSubtitles();
+                showToast("Templat Komentator Sepakbola Dimuat!", "success");
+            }
+        }
+
+        function playAudioUrl(url) {
+            const a = new Audio(url);
+            a.play();
+        }
+
+        // Voice Engine 1: Web Speech Synthesis
+        function speakWebSpeech(text) {
+            if (!('speechSynthesis' in window)) {
+                showToast("Browser Anda tidak mendukung Speech Synthesis", "error");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+
+            const preset = selectWebspeechPreset.value;
+            loadBrowserVoices();
+
+            let targetVoice = null;
+            if (preset.includes('pria')) {
+                targetVoice = browserVoices.find(v => (v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('indonesian')) && !v.name.toLowerCase().includes('gadis') && !v.name.toLowerCase().includes('zira'));
+            } else {
+                targetVoice = browserVoices.find(v => v.name.toLowerCase().includes('gadis') || v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('female'));
+            }
+
+            if (targetVoice) utterance.voice = targetVoice;
+
+            if (preset === 'pria-garang') {
+                utterance.pitch = 0.4;
+                utterance.rate = parseFloat(webspeechRateRange.value) * 0.95;
+            } else if (preset === 'pria-semangat') {
+                utterance.pitch = 0.6;
+                utterance.rate = parseFloat(webspeechRateRange.value) * 1.25;
+            } else if (preset === 'wanita-ceria') {
+                utterance.pitch = 1.3;
+                utterance.rate = parseFloat(webspeechRateRange.value) * 1.1;
+            }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Voice Engine 2: Gemini Neural TTS API Engine
+        function pcmToWav(base64Data, sampleRate = 24000) {
+            const binaryString = atob(base64Data);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            const numChannels = 1;
+            const bitsPerSample = 16;
+            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+            const blockAlign = numChannels * (bitsPerSample / 8);
+            const dataSize = bytes.length;
+            const headerSize = 44;
+            const totalSize = headerSize + dataSize;
+            
+            const buffer = new ArrayBuffer(totalSize);
+            const view = new DataView(buffer);
+            
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+            
+            const pcmBytes = new Uint8Array(buffer, headerSize, dataSize);
+            pcmBytes.set(bytes);
+            
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        async function generateSingleSegmentGemini(idx) {
+            const sub = subtitles[idx];
+            if (!sub || !sub.text.trim()) return;
+
+            const vibePrefix = VIBE_PROMPTS[selectGeminiVibe.value] || "";
+            const promptText = `${vibePrefix}${sub.text}`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: promptText }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: {
+                                voiceName: selectGeminiVoice.value
+                            }
+                        }
+                    }
+                },
+                model: "gemini-2.5-flash-preview-tts"
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                const part = data.candidates?.[0]?.content?.parts?.[0];
+                const inlineData = part?.inlineData;
+
+                if (!inlineData || !inlineData.data) {
+                    throw new Error("Gagal memproses data suara dari API.");
+                }
+
+                let sampleRate = 24000;
+                if (inlineData.mimeType) {
+                    const match = inlineData.mimeType.match(/rate=(\d+)/);
+                    if (match && match[1]) sampleRate = parseInt(match[1], 10);
+                }
+
+                const wavBlob = pcmToWav(inlineData.data, sampleRate);
+                sub.audioUrl = URL.createObjectURL(wavBlob);
+
+                renderSubtitles();
+                showToast(`Voice AI segmen #${idx + 1} siap!`, "success");
+
+            } catch (err) {
+                showToast(`Gagal: ${err.message}`, "error");
+            }
+        }
+
+        function playSingleRowVoice(idx) {
+            const engine = selectVoiceEngine.value;
+            const sub = subtitles[idx];
+            if (!sub) return;
+
+            if (engine === 'web-speech') {
+                speakWebSpeech(sub.text);
+            } else {
+                if (sub.audioUrl) {
+                    playAudioUrl(sub.audioUrl);
+                } else {
+                    generateSingleSegmentGemini(idx);
+                }
+            }
+        }
+
+        // Export Subtitle SRT File
+        function exportSrtFile() {
+            if (subtitles.length === 0) {
+                showToast("Tidak ada segmen subtitle untuk diekspor!", "error");
+                return;
+            }
+
+            let srtContent = "";
+
+            subtitles.forEach((sub, index) => {
+                const startSrt = formatSrtTimestamp(sub.startTime);
+                const endSrt = formatSrtTimestamp(sub.endTime);
+
+                srtContent += `${index + 1}\n`;
+                srtContent += `${startSrt} --> ${endSrt}\n`;
+                srtContent += `${sub.text}\n\n`;
+            });
+
+            const blob = new Blob([srtContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `VoxStudio_Game_Subtitle_${Date.now()}.srt`;
+            a.click();
+
+            showToast("File Subtitle (.SRT) berhasil diekspor!", "success");
+        }
+
+        function formatSrtTimestamp(timeStr) {
+            const sec = parseTimeToSeconds(timeStr);
+            const hrs = Math.floor(sec / 3600);
+            const mins = Math.floor((sec % 3600) / 60);
+            const secs = Math.floor(sec % 60);
+            const ms = Math.floor((sec % 1) * 1000);
+
+            return `${hrs < 10 ? '0' : ''}${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs},${ms < 100 ? (ms < 10 ? '00' : '0') : ''}${ms}`;
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
